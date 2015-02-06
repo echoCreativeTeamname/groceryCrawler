@@ -16,6 +16,6 @@ ActiveRecord::Base.establish_connection(YAML::load(File.open('db/config.yml')))
 ActiveRecord::Base.logger = log
 
 #Load all Active-Record models
-Dir["./models/*.rb"].each do |file|
+Dir["./db/models/*.rb"].each do |file|
   require file
 end
