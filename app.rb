@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'active_record'
 require 'yaml'
+require 'logger'
 
 #Logger
 log = Logger.new(STDERR)
