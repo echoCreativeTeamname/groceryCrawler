@@ -1,2 +1,2 @@
-require 'standalone_migrations'
-StandaloneMigrations::Tasks.load_tasks
+require 'active_record_migrations'
+ActiveRecordMigrations.load_tasks

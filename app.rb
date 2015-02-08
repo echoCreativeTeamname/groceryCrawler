@@ -11,8 +11,7 @@ unless(File.exist?('db/config.yml'))
   log.error "Database configuration file doesn't exist, please create 'db/config.yml'"
   exit
 end
-
-ActiveRecord::Base.establish_connection(YAML::load(File.open('db/config.yml')))
+ActiveRecord::Base.establish_connection(YAML::load(File.open('db/config.yml'))["development"])
 ActiveRecord::Base.logger = log
 
 #Load all Active-Record models
