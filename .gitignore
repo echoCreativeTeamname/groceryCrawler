@@ -22,3 +22,5 @@ build/
 /lib/bundler/man/
 .rvmrc
 .DS_Store
+/log/
+/log

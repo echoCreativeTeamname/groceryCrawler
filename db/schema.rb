@@ -13,6 +13,13 @@
 
 ActiveRecord::Schema.define(version: 20150204125643) do
 
+  create_table "openinghours", force: :cascade do |t|
+    t.integer "store_id",    limit: 4
+    t.date    "date"
+    t.time    "openingtime"
+    t.time    "closingtime"
+  end
+
   create_table "recipeingredient", id: false, force: :cascade do |t|
     t.integer "ingredient_id", limit: 4,   null: false
     t.integer "recipe_id",     limit: 4,   null: false
@@ -20,18 +27,22 @@ ActiveRecord::Schema.define(version: 20150204125643) do
   end
 
   create_table "storechains", force: :cascade do |t|
-    t.string  "name",        limit: 255
-    t.integer "priceclass",  limit: 4
-    t.integer "healthclass", limit: 4
-    t.date    "lastupdated"
+    t.string   "name",        limit: 255
+    t.integer  "priceclass",  limit: 4
+    t.integer  "healthclass", limit: 4
+    t.datetime "lastupdated"
   end
 
   create_table "stores", force: :cascade do |t|
-    t.string  "name",          limit: 255
-    t.string  "city",          limit: 255
-    t.string  "postalcode",    limit: 255
-    t.string  "steet",         limit: 255
-    t.integer "storechain_id", limit: 4
+    t.string   "name",          limit: 255
+    t.string   "city",          limit: 255
+    t.string   "postalcode",    limit: 255
+    t.string   "street",        limit: 255
+    t.integer  "storechain_id", limit: 4
+    t.string   "identifier",    limit: 255
+    t.float    "longitude",     limit: 24
+    t.float    "latitude",      limit: 24
+    t.datetime "lastupdated"
   end
 
 end

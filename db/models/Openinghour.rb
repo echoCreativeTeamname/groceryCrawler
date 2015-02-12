@@ -3,12 +3,12 @@ Store
  - id (auto)
  - store_id
  - date
- - opening_time
- - closing_time
+ - openingtime
+ - closingtime
 =end
 
 class Openinghour < ActiveRecord::Base
   belongs_to :store
 
-  validates :store_id, :date, :opening_time, :closing_time, presence: true
+  validates :store, :date, :openingtime, :closingtime, presence: true
 end

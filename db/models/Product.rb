@@ -1,13 +1,13 @@
 =begin
 Product
  - id (auto)
- - UUID (auto)
+ - UUID (auto) TODO: implement UUID
  - store_id
- - name
- - healthclass
+ - name (also identifier)
  - price
  - ingredient_id
- - image_url
+ - amount
+ - image_url? TODO
 =end
 
 
