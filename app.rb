@@ -20,11 +20,12 @@ Dir["./db/models/*.rb"].each do |file|
   require file
 end
 
+
 require("./crawlers/StoreCrawler")
 require("./crawlers/stores/Jumbo")
 
-store = Crawler::Stores::Jumbo.new log
-store.products
+storecrawler = Crawler::Stores::Jumbo.new log
+storecrawler.stores
 
 =begin
 #Crawler::Stores::Jumbo.load(log)

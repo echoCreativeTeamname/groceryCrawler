@@ -7,21 +7,17 @@ module Crawler::Stores
   class Jumbo < Crawler::Store
 
     def initialize(logger)
-      @logger = logger;
-      @sid_cookie = open('http://www.jumbo.com').meta['set-cookie'].split('; ', 2)[0]
       @name = "Jumbo Supermarkten"
+      @sid_cookie = open('http://www.jumbo.com').meta['set-cookie'].split('; ', 2)[0]
 
-      #find storechain
-      unless(@storechain = Storechain.where(name: @name).first)
-        @logger.fatal "Couldn't find the correct storechain for store #{@name}"
-        exit
-      end
+      super logger
     end
 
     def products
       i = 0 # Current page
 
       loop do
+        @logger.debug "Current product page: #{i}"
         unparsedproductspage = Nokogiri::HTML(open("http://www.jumbo.com/producten?PageNumber=#{i}"))
         unparsedproducts = unparsedproductspage.css(".jum-result")
 
@@ -34,8 +30,7 @@ module Crawler::Stores
           unparsedprice = product.css(".jum-sale-price > .jum-price-format").text
           price = [unparsedprice[0..-3], unparsedprice[-2..-1]].join(".").to_f
 
-          puts "#{product.css("h3 > a").text} €#{price}"
-
+          Product.create(name: product.css("h3 > a").text, price: price, chain: @storechain)
         end
 
         # Go to next page
@@ -79,7 +74,7 @@ module Crawler::Stores
             latitude: unparsedstoresmall["latitude"],
             longitude: unparsedstoresmall["longitude"],
             identifier: unparsedstoresmall["uuid"],
-            storechain: @storechain
+            chain: @storechain
           )
 
         end
@@ -101,19 +96,23 @@ module Crawler::Stores
           savingday = "#{dayArray[(i%7)-1]}#{i <= 7 ? "This" : "Next"}"
 
           # Check if store isn't closed that day of if we already saved that day
-          if(unparsedstore["attributes"]["#{savingday}Open"]["value"] == "Gesloten" || ::Openinghour.where(store: currentstore, date: beginningofweek+(i-1)).size > 0)
+          if(unparsedstore["attributes"]["#{savingday}Open"]["value"] == "Gesloten" || unparsedstore["attributes"]["#{savingday}Open"]["value"] == "Geslote"  || ::Openinghour.where(store: currentstore, date: beginningofweek+(i-1)).size > 0)
             next
           end
 
           # Save openinghour to the database
-          newopeninghour = ::Openinghour.new(
-            store: currentstore,
-            date: beginningofweek+(i-1),
-            openingtime: Time.parse(unparsedstore["attributes"]["#{savingday}Open"]["value"]),
-            closingtime: Time.parse(unparsedstore["attributes"]["#{savingday}Close"]["value"])
-          )
+          begin
+            newopeninghour = ::Openinghour.new(
+              store: currentstore,
+              date: beginningofweek+(i-1),
+              openingtime: Time.parse(unparsedstore["attributes"]["#{savingday}Open"]["value"]),
+              closingtime: Time.parse(unparsedstore["attributes"]["#{savingday}Close"]["value"])
+            )
 
-          unless(newopeninghour.save)
+            unless(newopeninghour.save)
+              @logger.error "Couldn't save openinghour with for store #{unparsedstoresmall["uuid"]} from #{@name} on day #{savingday}."
+            end
+          rescue ArgumentError
             @logger.error "Couldn't save openinghour with for store #{unparsedstoresmall["uuid"]} from #{@name} on day #{savingday}."
           end
         end

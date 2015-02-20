@@ -3,6 +3,7 @@ require 'date'
 =begin
 Storechain
   - id (auto)
+  - UUID (auto)
   - name
   - healthclass
   - priceclass
@@ -23,6 +24,14 @@ class Storechain < ActiveRecord::Base
 
   def lastUpdatedDate
     DateTime.strptime(self.lastupdated.to_s,'%s')
+  end
+
+  #UUID
+  before_create :check_uuid
+  def check_uuid
+    unless(self.uuid)
+      self.uuid = SecureRandom.uuid
+    end
   end
 
   private
