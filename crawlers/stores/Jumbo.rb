@@ -28,9 +28,29 @@ module Crawler::Stores
 
         unparsedproducts.each do |product|
           unparsedprice = product.css(".jum-sale-price > .jum-price-format").text
+          if(product.css(".jum-sale-price-info > .jum-pack-size").text != "")
+            amount = product.css(".jum-sale-price-info > .jum-pack-size").text
+          else
+            amount = "1 " + product.css(".jum-comparative-price").text.split("/")[1].split(")")[0]
+          end
+
+          amount_change_hash = {
+            "stuks" => "stks",
+            "stuk" => "stks",
+            "kilo" => "kg",
+            "liter" => "l"
+          }
+
+          amount_change_hash.each do |key, value|
+            amount.gsub!(key, value)
+          end
+
+
           price = [unparsedprice[0..-3], unparsedprice[-2..-1]].join(".").to_f
 
-          Product.create(name: product.css("h3 > a").text, price: price, chain: @storechain)
+          puts "#{product.css("h3 > a").text}: #{price} (#{amount})"
+
+          Product.create(name: product.css("h3 > a").text, price: price, chain: @storechain, amount: amount)
         end
 
         # Go to next page
@@ -63,7 +83,7 @@ module Crawler::Stores
         end
 
         # Check if we already know this store
-        unless(currentstore = ::Store.where(identifier: unparsedstoresmall["uuid"], storechain: @storechain).first)
+        unless(currentstore = ::Store.where(identifier: unparsedstoresmall["uuid"], chain: @storechain).first)
 
           # Save store in the database
           currentstore = ::Store.new(

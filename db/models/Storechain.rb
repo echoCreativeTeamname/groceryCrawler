@@ -11,8 +11,8 @@ Storechain
 =end
 class Storechain < ActiveRecord::Base
 
-  has_many :stores
-  has_many :products
+  has_many :stores, dependent: :destroy, :foreign_key => 'chain_id'
+  has_many :products, dependent: :destroy
   validates :name, presence: true
 
   before_save :update_last_updated

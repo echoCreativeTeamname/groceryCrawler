@@ -25,7 +25,7 @@ require("./crawlers/StoreCrawler")
 require("./crawlers/stores/Jumbo")
 
 storecrawler = Crawler::Stores::Jumbo.new log
-storecrawler.stores
+storecrawler.products
 
 =begin
 #Crawler::Stores::Jumbo.load(log)
