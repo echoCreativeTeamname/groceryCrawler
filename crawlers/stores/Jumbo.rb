@@ -50,7 +50,7 @@ module Crawler::Stores
 
           puts "#{product.css("h3 > a").text}: #{price} (#{amount})"
 
-          Product.create(name: product.css("h3 > a").text, price: price, chain: @storechain, amount: amount)
+          Product.create(name: product.css("h3 > a").text, price: price, storechain: @storechain, amount: amount)
         end
 
         # Go to next page
