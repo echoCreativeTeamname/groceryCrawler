@@ -27,30 +27,50 @@ module Crawler::Stores
         end
 
         unparsedproducts.each do |product|
+
           unparsedprice = product.css(".jum-sale-price > .jum-price-format").text
-          if(product.css(".jum-sale-price-info > .jum-pack-size").text != "")
-            amount = product.css(".jum-sale-price-info > .jum-pack-size").text
-          else
-            amount = "1 " + product.css(".jum-comparative-price").text.split("/")[1].split(")")[0]
-          end
+          price = [unparsedprice[0..-3], unparsedprice[-2..-1]].join(".").to_f
+
+          #new way of getting the amount
+          #jum-price-format jum-comparative-price
+          unparsed_amount = product.css(".jum-sale-price-info > .jum-comparative-price").text
+          puts unparsed_amount
+          unparsed_amount["("] = ""
+          unparsed_amount[")"] = ""
+
+          amount_type = unparsed_amount.split("/")[1]
+          amount = unparsed_amount.split("/")[0].split(",")
+          amount = amount[0].to_f + (amount[1].to_f / 100)
+          amount = price / amount
+
+
+          #if(product.css(".jum-sale-price-info > .jum-pack-size").text != "")
+          #  amount = product.css(".jum-sale-price-info > .jum-pack-size").text
+          #else
+          #    amount = "1 " + product.css(".jum-comparative-price").text.split("/")[1].split(")")[0]
+          #end
 
           amount_change_hash = {
             "stuks" => "stks",
+            "Stuks" => "stks",
             "stuk" => "stks",
             "kilo" => "kg",
             "liter" => "l"
           }
 
           amount_change_hash.each do |key, value|
-            amount.gsub!(key, value)
+            amount_type.gsub!(key, value)
           end
 
+          amount = amount.to_s + " " + amount_type
 
-          price = [unparsedprice[0..-3], unparsedprice[-2..-1]].join(".").to_f
+
+
 
           puts "#{product.css("h3 > a").text}: #{price} (#{amount})"
 
-          Product.create(name: product.css("h3 > a").text, price: price, storechain: @storechain, amount: amount)
+
+          #Product.create(name: product.css("h3 > a").text, price: price, storechain: @storechain, amount: amount)
         end
 
         # Go to next page
@@ -65,6 +85,8 @@ module Crawler::Stores
 
       # Cooldown time
       sleep(1.0/4.0)
+
+
 
       # Get info of each store and save it in the database
       unparsedlist.each do |unparsedstoresmall|

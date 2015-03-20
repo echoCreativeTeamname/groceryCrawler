@@ -18,20 +18,16 @@ ActiveRecord::Base.logger = log
 #Load all Active-Record models
 Dir["./db/models/*.rb"].each do |file|
   require file
-end
 
+end
 
 require("./crawlers/StoreCrawler")
 require("./crawlers/stores/Jumbo")
 
+
+
 storecrawler = Crawler::Stores::Jumbo.new log
 storecrawler.products
 
-=begin
 #Crawler::Stores::Jumbo.load(log)
 #Crawler::Stores::Jumbo.stores
-
-Store.where(city: "Amsterdam").all.each do |store|
-  puts store.storechain.name
-end
-=end
