@@ -39,37 +39,41 @@ module Crawler::Stores
           amount_type = unparsed_amount.split("/")[1]
           amount = unparsed_amount.split("/")[0].split(",")
           amount = amount[0].to_f + (amount[1].to_f / 100)
-          amount = price / amount
 
-          # Change all the amount types to types we know
-          amount_change_hash = {
-            "stuks" => "stks",
-            "Stuks" => "stks",
-            "stuk" => "stks",
-            "kilo" => "kg",
-            "liter" => "l"
-          }
+          if(amount != 0)
 
-          amount_change_hash.each do |key, value|
-            amount_type.gsub!(key, value)
-          end
+            amount = price / amount
 
-          # We don't want complicated amounts..
-          if(amount_type == "stks")
-            amount = amount.round
-          else
-            amount = amount.round(2)
-          end
+            # Change all the amount types to types we know
+            amount_change_hash = {
+              "stuks" => "stks",
+              "Stuks" => "stks",
+              "stuk" => "stks",
+              "kilo" => "kg",
+              "liter" => "l"
+            }
 
-          amount = amount.to_s + " " + amount_type
-          name = product.css("h3 > a").text
+            amount_change_hash.each do |key, value|
+              amount_type.gsub!(key, value)
+            end
+
+            # We don't want complicated amounts..
+            if(amount_type == "stks")
+              amount = amount.round
+            else
+              amount = amount.round(2)
+            end
+
+            amount = amount.to_s + " " + amount_type
+            name = product.css("h3 > a").text
 
 
-          # Update/save this information in the database
-          if(dbproduct = Product.find_by(identifier: name, storechain: @storechain))
-            dbproduct.update_attributes(price: price)
-          else
-            Product.create(name: name, price: price, amount: amount, identifier: name, storechain: @storechain)
+            # Update/save this information in the database
+            if(dbproduct = Product.find_by(identifier: name, storechain: @storechain))
+              dbproduct.update_attributes(price: price)
+            else
+              Product.create(name: name, price: price, amount: amount, identifier: name, storechain: @storechain)
+            end
           end
         end
 
