@@ -31,10 +31,8 @@ module Crawler::Stores
           unparsedprice = product.css(".jum-sale-price > .jum-price-format").text
           price = [unparsedprice[0..-3], unparsedprice[-2..-1]].join(".").to_f
 
-          #new way of getting the amount
-          #jum-price-format jum-comparative-price
+          # Weird way of getting the amount
           unparsed_amount = product.css(".jum-sale-price-info > .jum-comparative-price").text
-          puts unparsed_amount
           unparsed_amount["("] = ""
           unparsed_amount[")"] = ""
 
@@ -43,13 +41,7 @@ module Crawler::Stores
           amount = amount[0].to_f + (amount[1].to_f / 100)
           amount = price / amount
 
-
-          #if(product.css(".jum-sale-price-info > .jum-pack-size").text != "")
-          #  amount = product.css(".jum-sale-price-info > .jum-pack-size").text
-          #else
-          #    amount = "1 " + product.css(".jum-comparative-price").text.split("/")[1].split(")")[0]
-          #end
-
+          # Change all the amount types to types we know
           amount_change_hash = {
             "stuks" => "stks",
             "Stuks" => "stks",
@@ -62,15 +54,23 @@ module Crawler::Stores
             amount_type.gsub!(key, value)
           end
 
+          # We don't want complicated amounts..
+          if(amount_type == "stks")
+            amount = amount.round
+          else
+            amount = amount.round(2)
+          end
+
           amount = amount.to_s + " " + amount_type
+          name = product.css("h3 > a").text
 
 
-
-
-          puts "#{product.css("h3 > a").text}: #{price} (#{amount})"
-
-
-          #Product.create(name: product.css("h3 > a").text, price: price, storechain: @storechain, amount: amount)
+          # Update/save this information in the database
+          if(dbproduct = Product.find_by(identifier: name, storechain: @storechain))
+            dbproduct.update_attributes(price: price)
+          else
+            Product.create(name: name, price: price, amount: amount, identifier: name, storechain: @storechain)
+          end
         end
 
         # Go to next page
@@ -85,8 +85,6 @@ module Crawler::Stores
 
       # Cooldown time
       sleep(1.0/4.0)
-
-
 
       # Get info of each store and save it in the database
       unparsedlist.each do |unparsedstoresmall|
@@ -130,7 +128,6 @@ module Crawler::Stores
 
         # Save all Openinghours for store
         dayArray = ["mon", "tues", "weds", "thurs", "fri", "sat", "sun"]
-        typesArray = ["This", "Next"]
         beginningofweek = Date.today.beginning_of_week
         for i in 1..14 do
 

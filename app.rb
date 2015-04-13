@@ -5,29 +5,30 @@ require 'logger'
 
 #Logger
 log = Logger.new(STDERR)
-#log = Logger.new(File.open("log/debug.log", "a"))
 
 #Setup Active-Record
-unless(File.exist?('db/config.yml'))
+unless(File.exist?('../server-shared/config/database.yml'))
   log.error "Database configuration file doesn't exist, please create 'db/config.yml'"
   exit
 end
-ActiveRecord::Base.establish_connection(YAML::load(File.open('db/config.yml'))["development"])
+
+ActiveRecord::Base.establish_connection(YAML::load(File.open('../server-shared/config/database.yml'))["development"])
 ActiveRecord::Base.logger = log
+ActiveRecord::Base.default_timezone = :local
 
 #Load all Active-Record models
-Dir["./db/models/*.rb"].each do |file|
+Dir["../server-shared/app/models/**/*.rb"].each do |file|
   require file
-
 end
 
-require("./crawlers/StoreCrawler")
-require("./crawlers/stores/Jumbo")
+# Load crawlers
+Dir["./crawlers/*.rb"].each do |file|
+  require file
+end
 
-
+Dir["./crawlers/**/*.rb"].each do |file|
+  require file
+end
 
 storecrawler = Crawler::Stores::Jumbo.new log
 storecrawler.products
-
-#Crawler::Stores::Jumbo.load(log)
-#Crawler::Stores::Jumbo.stores

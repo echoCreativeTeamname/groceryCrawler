@@ -7,7 +7,7 @@ module Crawler
 		end
 
 		def findIngredientByName(name)
-			return ingredient = ::Ingredient.where(name: name).first ? ingredient | false
+			#return ingredient = ::Ingredient.where(name: name).first ? ingredient | false
 		end
 
 		def findIngredientById(id)
